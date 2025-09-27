@@ -67,6 +67,10 @@ const tableBody = document.querySelector('tbody');
 tableBody.addEventListener('click', (e) => {
   const targetRow = e.target.closest('tr');
 
+  if (!targetRow) {
+    return;
+  }
+
   const rows = tableBody.querySelectorAll('tr');
 
   rows.forEach((row) => row.classList.remove('active'));
@@ -75,6 +79,18 @@ tableBody.addEventListener('click', (e) => {
 
 tableBody.addEventListener('dblclick', (e) => {
   const targetedTD = e.target.closest('td');
+
+  if (!targetedTD) {
+    return;
+  }
+
+  const existingInput = document.querySelector('.cell-input');
+
+  if (existingInput) {
+    const parentCell = existingInput.closest('td');
+
+    savedChanges(existingInput, parentCell, parentCell.dataset.originalValue);
+  }
 
   if (targetedTD) {
     const savedText = targetedTD.textContent;
@@ -140,6 +156,7 @@ officeSelect.name = 'office';
 officeSelect.setAttribute('data-qa', 'office');
 
 const officeOptions = [
+  '',
   'Tokyo',
   'Singapore',
   'London',
@@ -224,13 +241,19 @@ function showNotification(title, message, type) {
 addNewEmployeeForm.addEventListener('submit', (e) => {
   e.preventDefault();
 
-  const nameField = nameInput.value.trim();
-  const position = positionInput.value.trim();
-  const office = officeSelect.value;
-  const age = Number(ageInput.value);
-  const salary = Number(salaryInput.value);
+  // Trim and fetch values
+  const nameValue = nameInput.value.trim();
+  const positionValue = positionInput.value.trim();
+  const officeValue = officeSelect.value;
+  const ageValue = ageInput.value.trim();
+  const salaryValue = salaryInput.value.trim();
 
-  if (!nameField || nameField.length < 4) {
+  // Convert numeric fields
+  const age = ageValue ? Number(ageValue) : 0;
+  const salary = salaryValue ? Number(salaryValue) : 0;
+
+  // Validations
+  if (!nameValue || nameValue.length < 4) {
     showNotification(
       'Invalid name',
       'The name cannot be shorter than 4 symbols!',
@@ -240,7 +263,7 @@ addNewEmployeeForm.addEventListener('submit', (e) => {
     return;
   }
 
-  if (!position) {
+  if (!positionValue) {
     showNotification(
       'Invalid position',
       'The position field is not assigned',
@@ -250,7 +273,7 @@ addNewEmployeeForm.addEventListener('submit', (e) => {
     return;
   }
 
-  if (!office) {
+  if (!officeValue) {
     showNotification(
       'Invalid office',
       "Haven't choosen the office position",
@@ -260,33 +283,36 @@ addNewEmployeeForm.addEventListener('submit', (e) => {
     return;
   }
 
-  if (!age || age < 18 || age > 90) {
+  if (!ageValue || age < 18 || age > 90) {
     showNotification('Invalid age', 'Age is not suitable', 'error');
 
     return;
   }
 
-  if (!salary || salary < 60000) {
+  if (!salaryValue || salary < 60000) {
     showNotification(
       'Invalid salary',
       'The salary field is assigned wrongly',
       'error',
     );
+
+    return;
   }
 
+  // Create new row
   const newRow = document.createElement('tr');
 
   const nameCell = document.createElement('td');
 
-  nameCell.textContent = nameField;
+  nameCell.textContent = nameValue;
 
   const positionCell = document.createElement('td');
 
-  positionCell.textContent = position;
+  positionCell.textContent = positionValue;
 
   const officeCell = document.createElement('td');
 
-  officeCell.textContent = office;
+  officeCell.textContent = officeValue;
 
   const ageCell = document.createElement('td');
 
@@ -304,11 +330,13 @@ addNewEmployeeForm.addEventListener('submit', (e) => {
 
   tableBody.appendChild(newRow);
 
+  // Success notification
   showNotification(
     'Added a new employee',
     'Employee is now in the table',
     'success',
   );
 
+  // Reset the form
   addNewEmployeeForm.reset();
 });
