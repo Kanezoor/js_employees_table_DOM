@@ -156,7 +156,6 @@ officeSelect.name = 'office';
 officeSelect.setAttribute('data-qa', 'office');
 
 const officeOptions = [
-  '',
   'Tokyo',
   'Singapore',
   'London',
